@@ -4,7 +4,8 @@ import styled from "styled-components";
 
 export default class Dashboard extends Component {
   state = {
-    isAuthenticated: this.props.isAuthenticated
+    isAuthenticated: this.props.isAuthenticated,
+    username: ""
   };
 
   render() {
