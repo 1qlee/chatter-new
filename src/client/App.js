@@ -1,23 +1,103 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
+import styled from 'styled-components';
+import { BrowserRouter as Router, Route, Link, Switch, Redirect } from 'react-router-dom';
+import {Main, MainContainer, MainContent} from "../components/main";
+import Chat from '../components/chat';
+import Dashboard from "../components/dashboard";
+import Login from "../components/login";
+import Signup from "../components/signup";
+import Alert from "../components/alert";
+import Content from "../components/content";
+import Anchor from "../components/anchor";
+// Styles
 import './app.css';
-import ReactImage from './react.png';
 
 export default class App extends Component {
-  state = { username: null };
+  state = {
+    isAuthenticated: null,
+    showLogin: false
+  }
 
   componentDidMount() {
-    fetch('/api/getUsername')
-      .then(res => res.json())
-      .then(user => this.setState({ username: user.username }));
+    this.callApi()
+      .then(res => this.setState({ isAuthenticated: res.isAuthenticated }))
+      .catch(err => console.log(err));
+  }
+
+  callApi = async () => {
+    const response = await fetch('/api/hello');
+    const body = await response.json();
+
+    if (response.status !== 200) throw Error("Something went wrong when trying to contact the server.");
+
+    return body;
+  }
+
+  changeForm() {
+    this.setState({
+      showLogin: !this.state.showLogin
+    });
+  }
+
+  authenticateUser(value) {
+    this.setState({
+      isAuthenticated: value
+    });
   }
 
   render() {
-    const { username } = this.state;
+    if (this.state.isAuthenticated === null) {
+      return (
+        <Main>
+        </Main>
+      )
+    }
     return (
-      <div>
-        {username ? <h1>{`Hello ${username}`}</h1> : <h1>Loading.. please wait!</h1>}
-        <img src={ReactImage} alt="react" />
-      </div>
-    );
+      <Main>
+        <Router>
+          <Switch>
+            <Route exact={true} path="/" render={() => (
+              <MainContainer>
+                <ul>
+                  <li>
+                    <Link to="/">Home</Link>
+                  </li>
+                  <li>
+                    <Link to="/dashboard">Dashboard</Link>
+                  </li>
+                </ul>
+                <MainContent>
+                  <Content>
+                    <h1>chatwick</h1>
+                    <p>The best way to talk in chatrooms.</p>
+                  </Content>
+                </MainContent>
+                {this.state.isAuthenticated ? (
+                  <Redirect to={{pathname: '/dashboard'}} />
+                ) : (
+                  <MainContent>
+                    {this.state.showLogin ? (
+                      <Fragment>
+                        <Login authenticateUser={this.authenticateUser.bind(this)} />
+                        <Alert>Don't have an account? <Anchor onClick={this.changeForm.bind(this)}>Sign Up</Anchor></Alert>
+                      </Fragment>
+                    ) : (
+                      <Fragment>
+                        <Signup authenticateUser={this.authenticateUser.bind(this)} />
+                        <Alert>Already have an account? <Anchor onClick={this.changeForm.bind(this)}>Log In</Anchor></Alert>
+                      </Fragment>
+                    )}
+                  </MainContent>
+                )}
+              </MainContainer>
+            )}/>
+            <Route path="/dashboard" render={(props) => <Dashboard {...props} isAuthenticated={this.state.isAuthenticated} />}/>
+            <Route render={() => (
+              <h1>404</h1>
+            )} />
+          </Switch>
+        </Router>
+      </Main>
+    )
   }
 }
