@@ -13,7 +13,7 @@ export default class Dashboard extends Component {
         <div>
           <ul>
             <li>
-              <Link to="/dashboard">Logout</Link>
+              <Link to="/logout">Logout</Link>
             </li>
           </ul>
           {this.state.isAuthenticated ? (
