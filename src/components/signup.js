@@ -28,11 +28,13 @@ export default class Signup extends Component {
     // Show any errors
     if (body[0] === "Error") {
       body.shift();
-      this.setState({ responseToPost: body, error: true })
+      this.setState({ responseToPost: body, error: true });
+      return this.props.authenticateUser(false);
     }
     else {
       if (body.isAuthenticated) {
         this.setState({ responseToPost: body.userId, error: false });
+        return this.props.authenticateUser(true);
       }
     }
   };

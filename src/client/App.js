@@ -15,16 +15,17 @@ import './app.css';
 export default class App extends Component {
   state = {
     isAuthenticated: null,
+    username: "",
     showLogin: false
   }
 
   componentDidMount() {
-    this.callApi()
+    this.fetchUser()
       .then(res => this.setState({ isAuthenticated: res.isAuthenticated }))
       .catch(err => console.log(err));
   }
 
-  callApi = async () => {
+  fetchUser = async () => {
     const response = await fetch('/api/hello');
     const body = await response.json();
 
@@ -91,7 +92,13 @@ export default class App extends Component {
                 )}
               </MainContainer>
             )}/>
-            <Route path="/dashboard" render={(props) => <Dashboard {...props} isAuthenticated={this.state.isAuthenticated} />}/>
+            <Route path="/dashboard" render={() => (
+              this.state.isAuthenticated ? (
+                <Dashboard />
+              ) : (
+                <Redirect to='/' />
+              )
+            )}/>
             <Route render={() => (
               <h1>404</h1>
             )} />

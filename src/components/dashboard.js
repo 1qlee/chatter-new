@@ -1,36 +1,65 @@
 import React, { Component } from "react";
 import { Redirect, Link } from "react-router-dom";
 import styled from "styled-components";
+import Anchor from "./anchor";
 
 export default class Dashboard extends Component {
   state = {
-    isAuthenticated: this.props.isAuthenticated,
-    username: ""
+    isAuthenticated: true,
+    user: {}
   };
 
+  componentDidMount() {
+    this.fetchUser()
+      .then(res => this.setState({ user: res.user }))
+      .catch(err => console.log(err));
+  }
+
+  fetchUser = async () => {
+    const response = await fetch('/api/hello');
+    const body = await response.json();
+
+    if (response.status !== 200) throw Error("Something went wrong with the request.");
+
+    return body;
+  };
+
+  logoutUser = async () => {
+    const response = await fetch('/api/logout');
+    const body = await response.json();
+
+    if (response.status !== 200) throw Error("Something went wrong with the request.");
+
+    console.log(body.isAuthenticated);
+
+    this.setState({
+      isAuthenticated: body.isAuthenticated
+    });
+  }
+
   render() {
-    if (this.props.isAuthenticated) {
+    if (this.state.user && this.state.isAuthenticated) {
       return (
         <div>
           <ul>
             <li>
-              <Link to="/logout">Logout</Link>
+              <Anchor onClick={this.logoutUser}>Logout</Anchor>
             </li>
           </ul>
-          {this.state.isAuthenticated ? (
-            <h1>Authenticated</h1>
-          ) : (
-            <h1>Not</h1>
-          )}
+          <h1>Hello {this.state.user.username}</h1>
         </div>
       )
     }
     else {
-      return (
-        <Redirect to={{
-          pathname: "/"
-        }} />
-      )
+      if (this.state.isAuthenticated) {
+        return (
+          <div>
+          </div>
+        )
+      }
+      else {
+        return <Redirect to="/" />
+      }
     }
   }
 }

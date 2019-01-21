@@ -90,13 +90,20 @@ app.use(express.static('dist'));
 
 // Route to open client-server connection and send logged-in status
 app.get('/api/hello', (req, res) => {
-  res.json({ isAuthenticated: req.isAuthenticated(), shit: true });
+  res.json({ isAuthenticated: req.isAuthenticated(), user: req.user });
 });
 
-app.get('/api/logout', (req, res) => {
+app.get('/api/logout', (req, res, next) => {
   req.logout();
-  req.session.destroy();
-  res.json({ isAuthenticated: false });
+  req.session.destroy((err) => {
+    if (err) {
+      return next(err);
+    }
+    else {
+      res.clearCookie("connect.sid");
+      res.json({ isAuthenticated: false });
+    }
+  });
 });
 
 // Route for logging a user in
