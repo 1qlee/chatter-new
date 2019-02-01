@@ -1,5 +1,8 @@
 const styles = {
-  white: "#fff",
+  white: {
+    normal: "#fff",
+    light: "rgba(255,255,255,0.72)"
+  },
   mint: "#3dfcb3",
   text: "#333",
   grey: {

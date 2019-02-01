@@ -1,15 +1,19 @@
 import React, { Component, Fragment } from 'react';
 import styled from 'styled-components';
+import styles from "../components/styles";
 import { BrowserRouter as Router, Route, Link, Switch, Redirect } from 'react-router-dom';
-import {Main, MainContainer, MainContent} from "../components/main";
-import Chat from '../components/chat';
+import { Main, MainContent } from "../components/main";
+import { Title, Subtitle } from "../components/title";
+import Alert from "../components/alert";
+import Anchor from "../components/anchor";
+import Container from "../components/container"
+import Content from "../components/content";
 import Dashboard from "../components/dashboard";
+import Hero from "../components/hero";
+import Navbar from "../components/navbar";
 import Login from "../components/login";
 import Signup from "../components/signup";
-import Alert from "../components/alert";
-import Content from "../components/content";
-import Anchor from "../components/anchor";
-// Styles
+
 import './app.css';
 
 export default class App extends Component {
@@ -58,24 +62,18 @@ export default class App extends Component {
         <Router>
           <Switch>
             <Route exact={true} path="/" render={() => (
-              <MainContainer>
-                <ul>
-                  <li>
-                    <Link to="/">Home</Link>
-                  </li>
-                  <li>
-                    <Link to="/dashboard">Dashboard</Link>
-                  </li>
-                </ul>
-                <MainContent>
-                  <Content>
-                    <h1>chatwick</h1>
-                    <p>The best way to talk in chatrooms.</p>
-                  </Content>
-                </MainContent>
-                {this.state.isAuthenticated ? (
-                  <Redirect to={{pathname: '/dashboard'}} />
-                ) : (
+              <Container>
+                <Navbar />
+                <Hero>
+                  <MainContent>
+                    <Content>
+                      <Title color={styles.grey.dark} backgroundColor={styles.mint}>chatwick</Title>
+                      <Subtitle color={styles.white.light}>A real-time chat application for fast and easy interaction with your friends, family, or whoever.</Subtitle>
+                    </Content>
+                  </MainContent>
+                  {this.state.isAuthenticated ? (
+                    <Redirect to={{pathname: '/dashboard'}} />
+                  ) : (
                   <MainContent>
                     {this.state.showLogin ? (
                       <Fragment>
@@ -89,8 +87,9 @@ export default class App extends Component {
                       </Fragment>
                     )}
                   </MainContent>
-                )}
-              </MainContainer>
+                  )}
+                </Hero>
+              </Container>
             )}/>
             <Route path="/dashboard" render={() => (
               this.state.isAuthenticated ? (

@@ -32,7 +32,7 @@ export default class Signup extends Component {
     }
     else if (response.status === 200) {
       const body = await response.json();
-      const {isAuthenticated} = body;
+      const { isAuthenticated } = body;
 
       return this.props.authenticateUser(isAuthenticated);
     }
@@ -65,12 +65,12 @@ export default class Signup extends Component {
             <h1>Log In</h1>
           </Content>
           <FormGroup>
-            <label>Username</label>
-            <Input type="text" name="username" autoComplete="off" onChange={this.handleChange.bind(this)} />
+            <label htmlFor="username-login-input">Username</label>
+            <Input id="username-login-input" type="text" name="username" autoComplete="off" onChange={this.handleChange.bind(this)} />
           </FormGroup>
           <FormGroup>
-            <label>Password</label>
-            <Input type="password" name="password" autoComplete="new-password" onChange={this.handleChange.bind(this)} />
+            <label htmlFor="password-login-input">Password</label>
+            <Input id="password-login-input" type="password" name="password" autoComplete="new-password" onChange={this.handleChange.bind(this)} />
           </FormGroup>
           <FormGroup>
             <Button className="is-fullwidth" background={styles.mint} color={styles.text} type="submit" form="login">Log In</Button>

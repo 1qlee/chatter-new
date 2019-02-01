@@ -63,12 +63,12 @@ export default class Signup extends Component {
             <h1>Sign Up</h1>
           </Content>
           <FormGroup>
-            <label>Username</label>
-            <Input type="text" name="username" autoComplete="off" onChange={this.handleChange.bind(this)} />
+            <label htmlFor="username-signup-input">Username</label>
+            <Input id="username-signup-input" type="text" name="username" autoComplete="off" onChange={this.handleChange.bind(this)} />
           </FormGroup>
           <FormGroup>
-            <label>Password</label>
-            <Input type="password" name="password" autoComplete="new-password" onChange={this.handleChange.bind(this)} />
+            <label htmlFor="password-signup-input">Password</label>
+            <Input id="password-signup-input" type="password" name="password" autoComplete="new-password" onChange={this.handleChange.bind(this)} />
           </FormGroup>
           <FormGroup>
             <Button className="is-fullwidth" background={styles.mint} color={styles.text} type="submit" form="signup">Sign Up</Button>

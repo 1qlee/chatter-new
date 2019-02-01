@@ -1,37 +1,45 @@
-import React from "react";
+import React, { Component } from "react";
 import styled from "styled-components";
+import styles from "./styles";
 
-const Input = styled.input`
-  border-radius: 3px;
-  border-left: 1px solid black;
-  border-top: 1px solid black;
-  position: absolute;
-  bottom: 0;
-  left: 300px;
-  width: calc(100% - 300px);
-  padding: 1rem;
+const ChatBoxContainer = styled.div`
+  border: 1px solid ${styles.white.normal};
+  width: 100%;
+  input {
+    background-color: ${styles.background.light};
+    border: none;
+    color: ${styles.white.normal};
+    padding: 1rem;
+    width: 100%;
+    &:focus {
+      outline: none;
+    }
+    &::placeholder {
+      color: ${styles.white.light};
+    }
+  }
 `
 
-class Chatbox extends React.Component {
+class ChatBox extends Component {
   constructor(props) {
     super(props);
     this.state = {
       message: ""
     }
-    this.onChange = this.onChange.bind(this);
-    this.onKeyUp = this.onKeyUp.bind(this);
+    this.handleChange = this.handleChange.bind(this);
+    this.handleKeyUp = this.handleKeyUp.bind(this);
   }
 
-  onChange = (event) => {
+  handleChange = (event) => {
     this.setState({
       message: event.target.value
     })
   }
 
-  onKeyUp = (event) => {
+  handleKeyUp = (event) => {
     if (event.key === 'Enter') {
       if (this.state.message.length) {
-        this.props.sendMessage({
+        this.props.message({
           userId: 1,
           roomId: 1,
           timestamp: new Date(),
@@ -47,13 +55,16 @@ class Chatbox extends React.Component {
 
   render() {
     return (
-      <Input
-        value={this.state.message}
-        onKeyUp={this.onKeyUp}
-        onChange={this.onChange}
-      />
+      <ChatBoxContainer>
+        <input
+          value={this.state.message}
+          onKeyUp={this.handleKeyUp}
+          onChange={this.handleChange}
+          placeholder="Send a message"
+          />
+      </ChatBoxContainer>
     )
   }
 }
 
-export default Chatbox
+export default ChatBox
