@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import styled from "styled-components";
-import styles from "./styles";
+import styles from "../styles";
 
 const ChatBoxContainer = styled.div`
   border: 1px solid ${styles.white.normal};
@@ -21,30 +21,37 @@ const ChatBoxContainer = styled.div`
 `
 
 class ChatBox extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      message: ""
-    }
-    this.handleChange = this.handleChange.bind(this);
-    this.handleKeyUp = this.handleKeyUp.bind(this);
+  state = {
+    message: "",
+    username: null,
+    userId: null,
+    roomId: null
   }
 
-  handleChange = (event) => {
+  componentDidMount() {
     this.setState({
-      message: event.target.value
-    })
+      username: this.props.user.username,
+      userId: this.props.user.userId
+    });
+    console.log(this.props.user);
   }
 
-  handleKeyUp = (event) => {
-    if (event.key === 'Enter') {
+  handleChange = (e) => {
+    this.setState({
+      message: e.target.value
+    });
+  }
+
+  handleKeyUp = (e) => {
+    if (e.key === 'Enter') {
       if (this.state.message.length) {
         this.props.message({
-          userId: 1,
+          creator_id: this.state.userId,
           roomId: 1,
-          timestamp: new Date(),
+          username: this.state.username,
+          timestamp: new Date().toLocaleTimeString(),
           text: this.state.message
-        })
+        });
         this.setState({ message: "" });
       }
       else {

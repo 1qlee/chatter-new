@@ -1,7 +1,7 @@
-import React from "react";
+import React, { Component } from "react";
 import styled from "styled-components";
-import styles from "./styles";
-import { sendMessage } from "../api/api";
+import styles from "../styles";
+import { socketSendMessage, socketAppendMessage } from "../../api/socketAPI";
 
 import ChatBox from "./chatbox";
 import ChatMenu from "./chatmenu";
@@ -14,17 +14,23 @@ const ChatContainer = styled.div`
   height: 100%;
 `
 
-class Chat extends React.Component {
-  constructor() {
-    super();
-    this.state = {
-      message: null
-    }
-    this.send = this.send.bind(this);
+class Chat extends Component {
+  state = {
+    message: [],
+    user: {}
   }
 
-  send(data) {
-    return sendMessage(data);
+  componentDidMount() {
+    this.setState({
+      user: this.props.user
+    });
+  }
+
+  sendMessage = (message) => {
+    this.setState({
+      message: message
+    });
+    return socketSendMessage(message);
   }
 
   render() {
@@ -34,7 +40,7 @@ class Chat extends React.Component {
         <ChatWindow>
           {this.props.children}
           <ChatMessages />
-          <ChatBox message={this.send}/>
+          <ChatBox message={this.sendMessage} user={this.props.user}/>
         </ChatWindow>
       </ChatContainer>
     )

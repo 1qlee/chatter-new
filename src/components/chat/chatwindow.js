@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import styled from "styled-components";
-import styles from "./styles";
+import styles from "../styles";
 
 const ChatWindowContainer = styled.div`
   width: 100%;

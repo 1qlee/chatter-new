@@ -42,7 +42,8 @@ app.use(session({
   secret: uuid(process.env.SECRET),
   resave: false,
   store: sessionStore,
-  saveUninitialized: false
+  saveUninitialized: false,
+  expires: new Date(Date.now() + 2000000)
 }));
 
 // Intialize passportjs
@@ -93,6 +94,8 @@ app.get('/api/hello', (req, res) => {
   res.json({ isAuthenticated: req.isAuthenticated(), user: req.user });
 });
 
+
+// Route for logging a user out
 app.get('/api/logout', (req, res, next) => {
   req.logout();
   req.session.destroy((err) => {
@@ -179,19 +182,6 @@ passport.deserializeUser(function(user_id, done) {
   done(null, user_id);
 });
 
-app.get("/", (req,res) => {
-  res.send("<h1>Server working...</h1>");
-})
-
-app.get("/chatrooms/:id", (req, res, next) => {
-  db.query(
-    "SELECT * FROM chatrooms WHERE id = ?", [req.params.id], (error, results, fields) => {
-      if (error) throw error;
-      res.json(results);
-    }
-  );
-});
-
 function authenticationMiddleware() {
   return(req, res, next) => {
     console.log(`req.session.passport.user: ${JSON.stringify(req.session.passport)}`);
@@ -209,13 +199,21 @@ io.on("connection", (client) => {
 
   client.on("message", (data) => {
     console.log(data);
+    client.emit("new", data);
   });
 
-  client.on("disconnect", () => {
+  client.on("disconnect", (id, msg) => {
     console.log("A user has disconnected.");
+    client.broadcast.to(id).emit("message", msg);
   })
 });
 
+// start server
 server.listen(port, () => {
   console.log('Running server on localhost:' + port);
 });
+
+// webpage for server
+app.get("/", (req,res) => {
+  res.send("<h1>Server working...</h1>");
+})

@@ -9,7 +9,7 @@ class ChatMenu extends Component {
   render() {
     return (
       <Menu>
-
+        
       </Menu>
     )
   }
