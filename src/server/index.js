@@ -199,7 +199,7 @@ io.on("connection", (client) => {
 
   client.on("message", (data) => {
     console.log(data);
-    client.emit("new", data);
+    client.emit("message", data);
   });
 
   client.on("disconnect", (id, msg) => {

@@ -43,4 +43,4 @@ const Input = styled.input`
   }
 `
 
-export {Form, FormGroup, Input, Label};
+export {Form, FormGroup, Input};

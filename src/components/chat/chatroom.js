@@ -36,10 +36,10 @@ class Chat extends Component {
   render() {
     return (
       <ChatContainer>
-        <ChatMenu />
+        <ChatMenu user={this.props.user} />
         <ChatWindow>
           {this.props.children}
-          <ChatMessages />
+          <ChatMessages user={this.props.user} />
           <ChatBox message={this.sendMessage} user={this.props.user}/>
         </ChatWindow>
       </ChatContainer>

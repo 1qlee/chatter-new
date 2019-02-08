@@ -67,7 +67,7 @@ class ChatBox extends Component {
           value={this.state.message}
           onKeyUp={this.handleKeyUp}
           onChange={this.handleChange}
-          placeholder="Send a message"
+          placeholder="Type a message..."
           />
       </ChatBoxContainer>
     )
