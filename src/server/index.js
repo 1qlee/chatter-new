@@ -20,6 +20,7 @@ const { body, check, validationResult } = require('express-validator/check');
 const saltRounds = 10;
 // Homemade database API
 const account = require("../api/account");
+const chat = require("../api/chat");
 
 // Read data with body-parser
 app.use(bodyParser.json());
@@ -109,6 +110,16 @@ app.get('/api/logout', (req, res, next) => {
   });
 });
 
+// Route for getting a user's chatrooms
+app.get('/api/getchatrooms', (req, res) => {
+  const { userId } = req.user;
+
+  chat.getRooms(userId).then((result) => {
+    console.log(result);
+    res.send(result);
+  });
+});
+
 // Route for logging a user in
 app.post('/api/login', [
   body('username').trim().escape(),
@@ -170,6 +181,25 @@ app.post('/api/signup', [
       });
     });
   }
+});
+
+// Route for creating a chatroom
+app.post('/api/create/chatroom', (req, res) => {
+  // Variables from form input (chatroomName and userId)
+  const body = req.body;
+  const { chatroomName } = body;
+  const { userId } = body;
+
+  console.log(`Got a request to create ${chatroomName} by ${userId}`);
+
+  // Create a chatroom record in the database
+  chat.createRoom(chatroomName, userId).then((result) => {
+    const chatroomId = result.insertId;
+
+    chat.insertMember(userId, result.insertId).then((result) => {
+      return res.json({ chatroom_id: chatroomId, name: chatroomName });
+    });
+  });
 });
 
 // store user id in a session

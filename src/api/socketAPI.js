@@ -13,7 +13,7 @@ const socketSendMessage = (message) => {
 // The callback will append the message to the DOM
 const socketAppendMessage = (cb) => {
   socket.on("message", (message) => {
-    console.log(`Appending message from: ${message.username}: ${message.text}`);
+    console.log(`Appending message from: ${message.username}: "${message.text}"`);
     // Send the message object to the callback function
     return cb(message);
   });

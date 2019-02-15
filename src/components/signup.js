@@ -39,7 +39,7 @@ export default class Signup extends Component {
     }
   };
 
-  handleChange(e) {
+  handleInput = (e) => {
     this.setState({
       [e.target.name]: e.target.value,
       responseToPost: ""
@@ -64,11 +64,11 @@ export default class Signup extends Component {
           </Content>
           <FormGroup>
             <label htmlFor="username-signup-input">Username</label>
-            <Input id="username-signup-input" type="text" name="username" autoComplete="off" onChange={this.handleChange.bind(this)} />
+            <Input id="username-signup-input" type="text" name="username" autoComplete="off" onChange={this.handleInput} />
           </FormGroup>
           <FormGroup>
             <label htmlFor="password-signup-input">Password</label>
-            <Input id="password-signup-input" type="password" name="password" autoComplete="new-password" onChange={this.handleChange.bind(this)} />
+            <Input id="password-signup-input" type="password" name="password" autoComplete="new-password" onChange={this.handleInput} />
           </FormGroup>
           <FormGroup>
             <Button className="is-fullwidth" background={styles.mint} color={styles.text} type="submit" form="signup">Sign Up</Button>

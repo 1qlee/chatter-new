@@ -22,10 +22,12 @@ class Chat extends Component {
 
   componentDidMount() {
     this.setState({
-      user: this.props.user
+      user: this.props.user,
+      chatrooms: this.props.chatrooms
     });
   }
 
+  // Use socket API to broadcast a message event
   sendMessage = (message) => {
     this.setState({
       message: message
@@ -36,7 +38,7 @@ class Chat extends Component {
   render() {
     return (
       <ChatContainer>
-        <ChatMenu user={this.props.user} />
+        <ChatMenu user={this.props.user} chatrooms={this.props.chatrooms} />
         <ChatWindow>
           {this.props.children}
           <ChatMessages user={this.props.user} />
