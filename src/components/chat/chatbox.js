@@ -33,17 +33,20 @@ class ChatBox extends Component {
       username: this.props.user.username,
       userId: this.props.user.userId
     });
-    console.log(this.props.user);
   }
 
+  // Update message value in state on input change
   handleChange = (e) => {
     this.setState({
       message: e.target.value
     });
   }
 
+  // Handle sending of a message
   handleKeyUp = (e) => {
     if (e.key === 'Enter') {
+      // If message is not empty, send message object to props function 'message'
+      // Then set message state value to empty
       if (this.state.message.length) {
         this.props.message({
           creator_id: this.state.userId,

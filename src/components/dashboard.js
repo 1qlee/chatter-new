@@ -1,8 +1,9 @@
 import React, { Component } from "react";
-import { Redirect, Link } from "react-router-dom";
+import { Route, Redirect, Link } from "react-router-dom";
 import styled from "styled-components";
 import Anchor from "./anchor";
-import Chat from "./chat/chatroom";
+import Chatroom from "./chat/chatroom";
+import ChatMessages from "./chat/chatmessages";
 import Navbar from "./navbar";
 import Loader from "./loader";
 
@@ -27,21 +28,21 @@ export default class Dashboard extends Component {
   // Get the user object for current logged-in user
   fetchUser = async () => {
     const response = await fetch('/api/hello');
-    const body = await response.json();
+    const user = await response.json();
 
     if (response.status !== 200) throw Error("Error: Couldn't fetch user.");
-    console.log(body);
-    return body;
+
+    return user;
   }
 
   // Get all chatrooms associated with logged-in user
   fetchChatrooms = async () => {
     const response = await fetch('/api/getchatrooms');
-    const body = await response.json();
+    const chatrooms = await response.json();
 
     if (response.status !== 200) throw Error("Error: Couldn't fetch chatrooms.");
-    console.log(body);
-    return body;
+
+    return chatrooms;
   }
 
   // Log the user out
@@ -74,9 +75,12 @@ export default class Dashboard extends Component {
     }
     else {
       return (
-        <Chat user={this.state.user} chatrooms={this.state.chatrooms}>
+        <Chatroom user={this.state.user} chatrooms={this.state.chatrooms}>
           <Anchor onClick={this.logoutUser}>Logout</Anchor>
-        </Chat>
+          <Route path="/chatrooms/:chatroomName" render={(match) => (
+            <ChatMessages user={this.state.user} match={match} />
+          )}/>
+        </Chatroom>
       )
     }
   }

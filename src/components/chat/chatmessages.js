@@ -36,11 +36,11 @@ class ChatMessages extends Component {
   }
 
   componentDidMount() {
-    // When a socket emits a message, let's add the message to state
+    // When a socket emits a message call the function appendMessage to add the message to state
     socketAppendMessage(this.appendMessage);
   }
 
-  // Function to add message to state as they come in
+  // Function to add messages to state as they come in
   appendMessage = (message) => {
     this.setState({
       messages: [...this.state.messages, message]

@@ -195,7 +195,7 @@ app.post('/api/create/chatroom', (req, res) => {
   // Create a chatroom record in the database
   chat.createRoom(chatroomName, userId).then((result) => {
     const chatroomId = result.insertId;
-
+    // Create a member record that corresponds to created chatroom and its creator
     chat.insertMember(userId, result.insertId).then((result) => {
       return res.json({ chatroom_id: chatroomId, name: chatroomName });
     });
@@ -224,8 +224,13 @@ function authenticationMiddleware() {
   }
 }
 
-io.on("connection", (client) => {
+io.sockets.on("connection", (client) => {
   console.log("New client connected");
+
+  client.on("subscribe", (chatroom) => {
+    console.log(`${chatroom.user.username} joined ${chatroom.name}`);
+    client.join(chatroom);
+  });
 
   client.on("message", (data) => {
     console.log(data);

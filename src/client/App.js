@@ -8,6 +8,7 @@ import Alert from "../components/alert";
 import Anchor from "../components/anchor";
 import Container from "../components/container"
 import Content from "../components/content";
+import Chatroom from "../components/chat/chatroom";
 import Dashboard from "../components/dashboard";
 import Hero from "../components/hero";
 import Navbar from "../components/navbar";
@@ -72,7 +73,7 @@ export default class App extends Component {
                     </Content>
                   </MainContent>
                   {this.state.isAuthenticated ? (
-                    <Redirect to={{pathname: '/dashboard'}} />
+                    <Redirect to={{pathname: '/chatrooms'}} />
                   ) : (
                   <MainContent>
                     {this.state.showLogin ? (
@@ -91,9 +92,9 @@ export default class App extends Component {
                 </Hero>
               </Container>
             )}/>
-            <Route path="/dashboard" render={() => (
+            <Route path="/chatrooms" render={routeProps => (
               this.state.isAuthenticated ? (
-                <Dashboard />
+                <Chatroom {...routeProps} />
               ) : (
                 <Redirect to='/' />
               )

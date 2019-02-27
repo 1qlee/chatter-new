@@ -1,6 +1,8 @@
 import React, { Component } from "react";
+import { Link } from "react-router-dom";
 import styled from "styled-components";
 import styles from "../styles";
+import { socketConnectToChatroom } from "../../api/socketAPI";
 import { Button } from "../button";
 import { Form, FormGroup, Input } from "../form";
 
@@ -9,10 +11,18 @@ const Menu = styled.div`
 `
 
 const Room = styled.div`
-  padding: 1rem;
-  color: ${styles.white.normal};
-  text-transform: capitalize;
   border: 1px solid ${styles.white.normal};
+  color: ${styles.white.normal};
+  display: block;
+  padding: 1rem;
+  text-transform: capitalize;
+  &.is-active {
+    color: ${styles.mint};
+  }
+  &:hover {
+    background-color: ${styles.background.border};
+    cursor: pointer;
+  }
 `
 
 class ChatMenu extends Component {
@@ -20,19 +30,20 @@ class ChatMenu extends Component {
     showForm: false,
     chatroomName: "",
     chatrooms: [],
+    currentChatroom: "",
     user: {}
   }
 
   componentDidMount = () => {
     this.setState({
       user: this.props.user,
-      chatrooms: this.props.chatrooms
+      chatrooms: this.props.chatrooms,
+      currentChatroom: this.props.currentChatroom
     });
-    console.log(this.props.chatrooms);
   }
 
   // Open and close the add/create chatroom menu
-  handleClick = (e) => {
+  handleToggleChatroomInput = (e) => {
     e.preventDefault();
     // Toggle the menu's state
     this.setState({
@@ -41,7 +52,7 @@ class ChatMenu extends Component {
   }
 
   // Submit chatroom name form
-  handleSubmit = async e => {
+  handleCreateChatroom = async e => {
     e.preventDefault();
     // Post the chatroom's name to server
     const response = await fetch('/api/create/chatroom', {
@@ -52,9 +63,9 @@ class ChatMenu extends Component {
       body: JSON.stringify({ chatroomName: this.state.chatroomName, userId: this.state.user.userId }),
     });
     const newChatroom = await response.json();
-    console.log(newChatroom);
 
     // If successful, add newly created chatroom name to state
+    // !!!!!!!!!!!!!!!!!!!! THIS NEEDS MORE LOGIC -> NEEDS INPUT VALIDATION SERVER-SIDE !!!!!!!!!!!!!!!!!!!
     if (newChatroom) {
       this.setState({
         chatrooms: [...this.state.chatrooms, newChatroom]
@@ -63,25 +74,44 @@ class ChatMenu extends Component {
   }
 
   // Update the chatroom name each time the input is changed
-  handleInput = (e) => {
+  handleNameChatroom = (e) => {
     this.setState({
       chatroomName: e.target.value
     });
   }
 
+  // Go to a chatroom on Room click
+  handleJoinChatroom = (e) => {
+    // Set currentChatroom in state to equal the room that was clicked
+    this.setState({
+      currentChatroom: e.target.innerHTML
+    });
+    return this.props.joinChatroom(e.target.dataset.name);
+  }
+
   render() {
     return (
       <Menu>
-        <Button onClick={this.handleClick}>New Chat</Button>
+        <Button onClick={this.handleToggleChatroomInput}>New Chat</Button>
         {this.state.showForm ? (
-          <Form onSubmit={this.handleSubmit} id="create-chatroom">
-            <Input onKeyUp={this.handleInput} placeholder="Enter a server name"></Input>
+          <Form onSubmit={this.handleCreateChatroom} id="create-chatroom">
+            <Input onKeyUp={this.handleNameChatroom} placeholder="Enter a server name"></Input>
           </Form>
         ) : (
           null
         )}
         {this.state.chatrooms.map((chatroom, index) => (
-          <Room key={index}>{chatroom.name}</Room>
+          <Link to={`/chatrooms/${chatroom.name}`} key={index}>
+            {(this.state.currentChatroom === chatroom.name) ? (
+              <Room onClick={this.handleJoinChatroom} data-name={chatroom.name} className="is-active">
+                {chatroom.name}
+              </Room>
+            ) : (
+              <Room onClick={this.handleJoinChatroom} data-name={chatroom.name}>
+                {chatroom.name}
+              </Room>
+            )}
+          </Link>
         ))}
       </Menu>
     )
