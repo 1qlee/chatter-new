@@ -19,17 +19,19 @@ import './app.css';
 
 export default class App extends Component {
   state = {
-    isAuthenticated: null,
+    isAuthenticated: false,
+    user: {},
     username: "",
     showLogin: false
   }
 
   componentDidMount() {
     this.fetchUser()
-      .then(res => this.setState({ isAuthenticated: res.isAuthenticated }))
+      .then(res => this.setState({ isAuthenticated: res.isAuthenticated, user: res.user }))
       .catch(err => console.log(err));
   }
 
+  // Function to see if the user is currently logged in or not
   fetchUser = async () => {
     const response = await fetch('/api/hello');
     const body = await response.json();
@@ -39,30 +41,24 @@ export default class App extends Component {
     return body;
   }
 
-  changeForm() {
+  changeForm = () => {
     this.setState({
       showLogin: !this.state.showLogin
     });
   }
 
-  authenticateUser(value) {
+  authenticateUser = (value) => {
     this.setState({
       isAuthenticated: value
     });
   }
 
   render() {
-    if (this.state.isAuthenticated === null) {
-      return (
-        <Main>
-        </Main>
-      )
-    }
     return (
       <Main>
         <Router>
           <Switch>
-            <Route exact={true} path="/" render={() => (
+            <Route exact path="/" render={() => (
               <Container>
                 <Navbar />
                 <Hero>
@@ -73,18 +69,18 @@ export default class App extends Component {
                     </Content>
                   </MainContent>
                   {this.state.isAuthenticated ? (
-                    <Redirect to={{pathname: '/chatrooms'}} />
+                    <Redirect to={{pathname: '/chatrooms', state: {isLoggedIn: false}}} />
                   ) : (
                   <MainContent>
                     {this.state.showLogin ? (
                       <Fragment>
-                        <Login authenticateUser={this.authenticateUser.bind(this)} />
-                        <Alert>Don't have an account? <Anchor onClick={this.changeForm.bind(this)}>Sign Up</Anchor></Alert>
+                        <Login authenticateUser={this.authenticateUser} />
+                        <Alert>Don't have an account? <Anchor onClick={this.changeForm}>Sign Up</Anchor></Alert>
                       </Fragment>
                     ) : (
                       <Fragment>
-                        <Signup authenticateUser={this.authenticateUser.bind(this)} />
-                        <Alert>Already have an account? <Anchor onClick={this.changeForm.bind(this)}>Log In</Anchor></Alert>
+                        <Signup authenticateUser={this.authenticateUser} />
+                        <Alert>Already have an account? <Anchor onClick={this.changeForm}>Log In</Anchor></Alert>
                       </Fragment>
                     )}
                   </MainContent>

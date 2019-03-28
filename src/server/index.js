@@ -105,13 +105,13 @@ app.get('/api/logout', (req, res, next) => {
     }
     else {
       res.clearCookie("connect.sid");
-      res.json({ isAuthenticated: false });
+      res.json({ isLoggedOut: true });
     }
   });
 });
 
 // Route for getting a user's chatrooms
-app.get('/api/getchatrooms', (req, res) => {
+app.get('/api/get/chatrooms', (req, res) => {
   const { userId } = req.user;
 
   chat.getRooms(userId).then((result) => {
@@ -127,7 +127,7 @@ app.post('/api/login', [
 ], (req, res) => {
   req.login(req.user, (err) => {
     if (err) { return next(err); }
-    return res.json({ username: req.user.username, id: req.user.userId, isAuthenticated: req.isAuthenticated() });
+    return res.json({ username: req.user.username, userId: req.user.userId, isAuthenticated: req.isAuthenticated() });
   });
 });
 
@@ -174,9 +174,11 @@ app.post('/api/signup', [
     bcrypt.hash(password, saltRounds, (err, hash) => {
       account.createUser(username, hash).then((result) => {
         const userId = result.insertId;
-        console.log("Signing in user with id:", userId);
-        req.login(userId, (err) => {
-          res.json({ "userId": userId, isAuthenticated: req.isAuthenticated() });
+        const user = { username: username, userId: userId };
+        console.log("Signing in user:", user);
+        req.login(user, (err) => {
+          if (err) { return next(err); }
+          res.json({ username: username, userId: userId, isAuthenticated: req.isAuthenticated() });
         });
       });
     });
@@ -195,11 +197,31 @@ app.post('/api/create/chatroom', (req, res) => {
   // Create a chatroom record in the database
   chat.createRoom(chatroomName, userId).then((result) => {
     const chatroomId = result.insertId;
+    const urlHash = uuid(chatroomName);
     // Create a member record that corresponds to created chatroom and its creator
-    chat.insertMember(userId, result.insertId).then((result) => {
-      return res.json({ chatroom_id: chatroomId, name: chatroomName });
+    chat.insertMember(userId, chatroomId, chatroomName, urlHash).then((result) => {
+      return res.json({ chatroomId: chatroomId, name: chatroomName, url: urlHash });
     });
   });
+});
+
+// Route for joining an existing chatroom
+app.post('/api/join/chatroom', (req, res) => {
+  // Variables from form input (chatroomName and userId)
+  const body = req.body;
+  const { chatroomId } = body;
+  const { userId } = body;
+
+  // Check if this user is already in this chatroom
+  chat.findMember(userId, chatroomId).then((result) => {
+    if (result.length) {
+      res.json({ chatroomId: result.chatroom_id, userId: result.user_id, name: result.name });
+    }
+    else {
+      return res.json({ error: "Chatroom doesn't exist!" });
+    }
+  });
+
 });
 
 // store user id in a session
@@ -224,6 +246,7 @@ function authenticationMiddleware() {
   }
 }
 
+// Manage socket events
 io.sockets.on("connection", (client) => {
   console.log("New client connected");
 
@@ -232,14 +255,19 @@ io.sockets.on("connection", (client) => {
     client.join(chatroom);
   });
 
-  client.on("message", (data) => {
-    console.log(data);
-    client.emit("message", data);
+  client.on("unsubscribe", (chatroom) => {
+    console.log(`${chatroom.user.username} left ${chatroom.name}`);
+    client.leave(chatroom);
   });
 
-  client.on("disconnect", (id, msg) => {
-    console.log("A user has disconnected.");
-    client.broadcast.to(id).emit("message", msg);
+  client.on("message", (data) => {
+    console.log(data);
+    client.to("serber").emit("message", data);
+  });
+
+  client.on("disconnect", (data) => {
+    console.log(data);
+    client.emit("message", data);
   })
 });
 

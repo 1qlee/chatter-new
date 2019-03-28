@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, Fragment } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import styles from "../styles";
@@ -11,24 +11,27 @@ const Menu = styled.div`
 `
 
 const Room = styled.div`
-  border: 1px solid ${styles.white.normal};
   color: ${styles.white.normal};
   display: block;
   padding: 1rem;
   text-transform: capitalize;
   &.is-active {
-    color: ${styles.mint};
+    background-color: ${styles.mint};
+    color: ${styles.text};
   }
   &:hover {
-    background-color: ${styles.background.border};
-    cursor: pointer;
+    &:not(.is-active) {
+      background-color: ${styles.background.border};
+      cursor: pointer;
+    }
   }
 `
 
 class ChatMenu extends Component {
   state = {
     showForm: false,
-    chatroomName: "",
+    newChatroomName: "",
+    existingChatroomId: "",
     chatrooms: [],
     currentChatroom: "",
     user: {}
@@ -51,7 +54,7 @@ class ChatMenu extends Component {
     });
   }
 
-  // Submit chatroom name form
+  // Create a new chatroom
   handleCreateChatroom = async e => {
     e.preventDefault();
     // Post the chatroom's name to server
@@ -60,7 +63,7 @@ class ChatMenu extends Component {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ chatroomName: this.state.chatroomName, userId: this.state.user.userId }),
+      body: JSON.stringify({ chatroomName: this.state.newChatroomName, userId: this.state.user.userId }),
     });
     const newChatroom = await response.json();
 
@@ -70,18 +73,42 @@ class ChatMenu extends Component {
       this.setState({
         chatrooms: [...this.state.chatrooms, newChatroom]
       });
+      return this.props.updateChatrooms(newChatroom);
     }
   }
 
-  // Update the chatroom name each time the input is changed
-  handleNameChatroom = (e) => {
+  // Join an existing chatroom
+  handleJoinExistingChatroom = async e => {
+    e.preventDefault();
+    // Post the chatroom's name to server
+    const response = await fetch('/api/join/chatroom', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ chatroomId: this.state.existingChatroomId, userId: this.state.user.userId })
+    });
+    const joinChatroom = await response.json();
+
+    console.log(joinChatroom);
+  }
+
+  // Record and set new chatroom name in state
+  handleNewChatroomInput = (e) => {
     this.setState({
-      chatroomName: e.target.value
+      newChatroomName: e.target.value
+    });
+  }
+
+  // Record and set existing chatroom name in state
+  handleExistingChatroomInput = (e) => {
+    this.setState({
+      existingChatroomId: e.target.value
     });
   }
 
   // Go to a chatroom on Room click
-  handleJoinChatroom = (e) => {
+  handleGoToChatroom = (e) => {
     // Set currentChatroom in state to equal the room that was clicked
     this.setState({
       currentChatroom: e.target.innerHTML
@@ -94,20 +121,25 @@ class ChatMenu extends Component {
       <Menu>
         <Button onClick={this.handleToggleChatroomInput}>New Chat</Button>
         {this.state.showForm ? (
-          <Form onSubmit={this.handleCreateChatroom} id="create-chatroom">
-            <Input onKeyUp={this.handleNameChatroom} placeholder="Enter a server name"></Input>
-          </Form>
+          <Fragment>
+            <Form onSubmit={this.handleCreateChatroom} id="create-chatroom">
+              <Input onKeyUp={this.handleNewChatroomInput} placeholder="Create new chatroom" type="text"></Input>
+            </Form>
+            <Form onSubmit={this.handleJoinExistingChatroom} id="existing-chatroom">
+              <Input onKeyUp={this.handleExistingChatroomInput} placeholder="Join existing chatroom" type="number"></Input>
+            </Form>
+          </Fragment>
         ) : (
           null
         )}
         {this.state.chatrooms.map((chatroom, index) => (
           <Link to={`/chatrooms/${chatroom.name}`} key={index}>
             {(this.state.currentChatroom === chatroom.name) ? (
-              <Room onClick={this.handleJoinChatroom} data-name={chatroom.name} className="is-active">
+              <Room onClick={this.handleGoToChatroom} data-name={chatroom.name} className="is-active">
                 {chatroom.name}
               </Room>
             ) : (
-              <Room onClick={this.handleJoinChatroom} data-name={chatroom.name}>
+              <Room onClick={this.handleGoToChatroom} data-name={chatroom.name}>
                 {chatroom.name}
               </Room>
             )}

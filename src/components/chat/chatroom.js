@@ -1,12 +1,12 @@
 import React, { Component } from "react";
 import { Route, Redirect, Link } from "react-router-dom";
-import Anchor from "../anchor";
 import Loader from "../loader";
 import Navbar from "../navbar";
 import styled from "styled-components";
 import styles from "../styles";
 import { socketSendMessage, socketAppendMessage, socketConnectToChatroom } from "../../api/socketAPI";
 
+import ChatNav from "./chatnav";
 import ChatBox from "./chatbox";
 import ChatMenu from "./chatmenu";
 import ChatMessages from "./chatmessages";
@@ -24,27 +24,29 @@ class Chatroom extends Component {
     user: {},
     chatrooms: [],
     currentChatroom: "",
-    isAuthenticated: true,
-    isLoading: true
+    isLoading: true,
+    isAuthenticated: true
   }
 
   componentDidMount() {
-    const currentChatroom = this.props.location.pathname.substring("11");
     // Run fetchUser to get user object from database
     this.fetchUser()
-      .then(res => this.setState({ user: res.user }))
+      .then(res => {
+        console.log(res);
+        if (res.isAuthenticated) {
+          this.setState({ user: res.user });
+        }
+        else {
+          this.setState({
+            isAuthenticated: false
+          });
+        }
+      })
       .catch(err => console.log(err));
 
     // Run fetchChatrooms to get all chatrooms for user
     this.fetchChatrooms()
       .then(res => {
-        // Change URL to first chatroom if path is /chatrooms
-        if (currentChatroom === "") {
-          this.setCurrentChatroom(res[0].name);
-        }
-        else {
-          this.setCurrentChatroom(currentChatroom);
-        }
         this.setState({ chatrooms: res, isLoading: false })
       })
       .catch(err => console.log(err));
@@ -62,12 +64,26 @@ class Chatroom extends Component {
 
   // Get all chatrooms associated with logged-in user
   fetchChatrooms = async () => {
-    const response = await fetch('/api/getchatrooms');
+    const response = await fetch('/api/get/chatrooms');
     const chatrooms = await response.json();
+    // Get the trailing pathname
+    const currentPath = this.props.location.pathname.substring("11");
 
     if (response.status !== 200) throw Error("Error: Couldn't fetch chatrooms.");
 
-    return chatrooms;
+    if (chatrooms.length) {
+      if (currentPath === "") {
+        this.setCurrentChatroom(chatrooms[0].chatroomName);
+      }
+      else {
+        this.setCurrentChatroom(currentPath);
+      }
+      return chatrooms;
+    }
+    else {
+      this.setCurrentChatroom("");
+      return [];
+    }
   }
 
   // Log the user out
@@ -76,10 +92,12 @@ class Chatroom extends Component {
     const body = await response.json();
 
     if (response.status !== 200) throw Error("Error: Couldn't log user out.");
-
-    this.setState({
-      isAuthenticated: false
-    });
+    console.log("Logging user out...");
+    if (body) {
+      this.setState({
+        isAuthenticated: false
+      });
+    }
   }
 
   // Use socket API to broadcast a message event
@@ -101,14 +119,23 @@ class Chatroom extends Component {
     return socketConnectToChatroom({ name: chatroom, user: this.state.user });
   }
 
+  handleUpdateChatrooms = (chatroom) => {
+    this.setState({
+      chatrooms: [...this.state.chatrooms, chatroom]
+    });
+  }
+
+  // Set current chatroom in URL
   setCurrentChatroom = (chatroom) => {
     this.setState({
       currentChatroom: chatroom
     });
+    socketConnectToChatroom({ name: chatroom, user: this.state.user });
     return this.props.history.push(`/chatrooms/${chatroom}`);
   }
 
   render() {
+    console.log(`Rendering chatrooms`);
     if (this.state.isLoading && this.state.isAuthenticated) {
       return (
         <div>
@@ -119,23 +146,29 @@ class Chatroom extends Component {
         </div>
       )
     }
-    else if (this.state.isAuthenticated === false){
+    else if (!this.state.isAuthenticated) {
+      console.log("Redirecting to home");
       return (
         <Redirect to="/" />
       )
     }
     else {
-      console.log(this.state.currentChatroom);
       return (
         <ChatContainer>
-          <ChatMenu user={this.state.user} currentChatroom={this.state.currentChatroom} chatrooms={this.state.chatrooms} joinChatroom={this.handleJoinChatroom} />
-          <ChatWindow>
-            <Anchor onClick={this.logoutUser}>Logout</Anchor>
-            <Route path="/chatrooms/:chatroomName" render={routeProps => (
-              <ChatMessages user={this.state.user} {...routeProps} />
-            )}/>
-            <ChatBox message={this.handleSendMessage} user={this.state.user}/>
-          </ChatWindow>
+          <ChatMenu user={this.state.user} currentChatroom={this.state.currentChatroom} chatrooms={this.state.chatrooms} joinChatroom={this.handleJoinChatroom} updateChatrooms={this.handleUpdateChatrooms} />
+          {this.state.chatrooms.length > 0 ? (
+            <ChatWindow>
+              <ChatNav logoutUser={this.logoutUser} user={this.state.user} />
+              <Route path="/chatrooms/:chatroomName" render={() => (
+                <ChatMessages user={this.state.user} />
+              )}/>
+              <ChatBox message={this.handleSendMessage} user={this.state.user}/>
+            </ChatWindow>
+          ) : (
+            <ChatWindow>
+              <ChatNav logoutUser={this.logoutUser} user={this.state.user} />
+            </ChatWindow>
+          )}
         </ChatContainer>
       )
     }

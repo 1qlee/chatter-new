@@ -5,7 +5,7 @@ import { socketAppendMessage } from "../../api/socketAPI";
 
 const ChatMessagesContainer = styled.div`
   border: 1px solid ${styles.white.normal};
-  height: calc(100% - 75px);
+  height: calc(100% - 100px);
   padding: 1rem;
   overflow-y: auto;
   width: 100%;
@@ -36,7 +36,7 @@ class ChatMessages extends Component {
   }
 
   componentDidMount() {
-    // When a socket emits a message call the function appendMessage to add the message to state
+    // When a socket emits a message, call the function appendMessage to add the message to state
     socketAppendMessage(this.appendMessage);
   }
 
